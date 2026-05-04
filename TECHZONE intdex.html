@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechZone Gadget Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #ff4757;
+            --primary-blue: #54a0ff;
+            --bg-body: #0f0f0f;
+            --bg-card: #1a1a1a;
+            --text-main: #ffffff;
+            --header-overlay: rgba(0,0,0,0.7);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --border-color: #333;
+            --card-img-bg: #ffffff;
+            --cat-btn-bg: #2d3436;
+            --search-bg: rgba(255, 255, 255, 0.1);
+            --search-border: rgba(255, 255, 255, 0.3);
+        }
+
+        body.light-mode {
+            --bg-body: #f4f7f6;
+            --bg-card: #ffffff;
+            --text-main: #1a1a1a;
+            --header-overlay: rgba(255,255,255,0.4);
+            --shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            --border-color: #dcdde1;
+            --card-img-bg: #f9f9f9;
+            --cat-btn-bg: #1a1a1a;
+            --search-bg: #ffffff;
+            --search-border: #1a1a1a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; transition: all 0.3s ease; }
+        body { background-color: var(--bg-body); color: var(--text-main); scroll-behavior: smooth; overflow-x: hidden; }
+
+        /* --- SIDEBAR MENU --- */
+        .sidebar {
+            position: fixed; top: 0; left: -300px; width: 300px; height: 100%;
+            background: var(--bg-card); z-index: 2000; padding: 40px 30px;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5); border-right: 2px solid var(--primary-red);
+        }
+        .sidebar.active { left: 0; }
+        .sidebar h2 { color: var(--primary-red); font-size: 28px; margin-bottom: 30px; }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin-bottom: 15px; }
+        .sidebar-menu a { 
+            text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 18px; 
+            display: flex; align-items: center; gap: 15px; padding: 10px; border-radius: 10px;
+        }
+        .sidebar-menu a:hover { background: var(--primary-red); color: white; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1500; display: none; }
+        .overlay.active { display: block; }
+
+        /* --- HEADER --- */
+        header { 
+            background: linear-gradient(var(--header-overlay), var(--header-overlay)), 
+                        url('https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover; background-position: center; border-bottom: 4px solid var(--primary-red); 
+            padding: 40px 60px; display: flex; flex-direction: column; align-items: center; gap: 25px; 
+        }
+        .header-top { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 50px; font-weight: 900; text-decoration: none; letter-spacing: -2px; }
+        .logo .t { color: var(--primary-red); }
+        .logo .z { color: var(--primary-blue); }
+
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .btn-action { border:none; padding:12px 24px; border-radius:30px; font-weight:800; cursor:pointer; }
+        .btn-mode { background: var(--primary-blue); color: white; }
+        .btn-menu { background: #fff; color: #000; }
+
+        .cart-wrapper { position: relative; cursor: pointer; font-size: 25px; }
+        .cart-badge { 
+            position: absolute; top: -5px; right: -10px; background: var(--primary-red); 
+            color: white; font-size: 12px; padding: 2px 6px; border-radius: 50%; font-weight: 800;
+        }
+
+        .search-area { width: 650px; display: flex; background: var(--search-bg); border-radius: 35px; padding: 6px; border: 2px solid var(--search-border); }
+        .search-area input { border: none; background: none; width: 100%; padding: 10px 20px; outline: none; color: var(--text-main); font-size: 16px; font-weight: 600; }
+        .search-area button { background: var(--primary-red); color: white; border: none; padding: 12px 35px; border-radius: 30px; cursor: pointer; font-weight: 700; }
+        .category-nav { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        .cat-link { cursor: pointer; color: white; font-weight: 700; font-size: 14px; padding: 10px 22px; border-radius: 25px; background: var(--cat-btn-bg); border: 1px solid rgba(255,255,255,0.1); }
+        .cat-link:hover, .cat-link.active { background: var(--primary-red); }
+
+        /* --- CONTAINER & CARDS --- */
+        .container { max-width: 1400px; margin: auto; padding: 50px 20px; min-height: 500px; }
+        .section-title { font-size: 28px; font-weight: 900; margin: 40px 0 20px; border-left: 6px solid var(--primary-red); padding-left: 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
+        
+        .card { 
+            background: var(--bg-card); 
+            border-radius: 20px; 
+            overflow: hidden; 
+            box-shadow: var(--shadow); 
+            border: 1px solid var(--border-color); 
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* HIGHLIGHT EFFECT */
+        .card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            border-color: var(--primary-red);
+            z-index: 100;
+        }
+
+        .img-box { height: 180px; background: var(--card-img-bg); padding: 20px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
+        
+        /* Image zoom inside card on hover */
+        .card:hover .img-box img {
+            transform: scale(1.1);
+        }
+
+        .offer-tag {
+            position: absolute; top: 10px; left: 10px; background: var(--primary-red); color: white;
+            padding: 5px 12px; border-radius: 5px; font-size: 11px; font-weight: 800; text-transform: uppercase; z-index: 10;
+        }
+
+        .info { padding: 15px; text-align: center; }
+        .info h4 { font-size: 16px; margin-bottom: 8px; }
+        .old-price { text-decoration: line-through; color: #888; font-size: 14px; margin-right: 5px; }
+        .price { color: var(--primary-blue); font-size: 18px; font-weight: 800; }
+        
+        .btn-cart { background: var(--primary-blue); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 800; width: 100%; margin-top: 15px; }
+        .btn-cart:hover { background: #2e86de; }
+        .btn-buy { background: var(--primary-red); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 800; width: 100%; margin-top: 8px; }
+
+        /* FOOTER ICONS STYLING */
+        .contact-info { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .contact-info i { font-size: 24px; color: var(--primary-red); min-width: 30px; text-align: center; }
+
+        footer { background: #000; color: #ccc; padding: 80px 20px 40px; border-top: 4px solid var(--primary-red); margin-top: 50px; }
+        .footer-container { max-width: 1300px; margin: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; }
+        .footer-box h3 { color: var(--primary-red); font-size: 22px; margin-bottom: 20px; font-weight: 800; }
+        .footer-box p { line-height: 1.6; margin-bottom: 10px; font-size: 15px; }
+        .footer-box ul { list-style: none; }
+        .footer-box ul li { margin-bottom: 10px; font-size: 15px; }
+        .footer-box ul li::before { content: "✓ "; color: var(--primary-red); font-weight: bold; }
+        .payment-icons { margin-top: 15px; font-size: 14px; font-weight: bold; color: var(--primary-blue); }
+
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+<nav class="sidebar" id="sidebar">
+    <h2>TECH ZONE</h2>
+    <ul class="sidebar-menu">
+        <li><a href="#" onclick="toggleMenu()">👤 Account</a></li>
+        <li><a href="#" onclick="toggleMenu()">ℹ️ About</a></li>
+        <li><a href="#" onclick="toggleMenu()">📞 Contact Us</a></li>
+        <li><a href="#" onclick="toggleMenu()">🛠️ Help & Support</a></li>
+        <li style="margin-top: 50px; border-top: 1px solid #444; padding-top: 20px;">
+            <a href="#" style="color: var(--primary-red);" onclick="alert('Logged Out!')">🚪 Log Out</a>
+        </li>
+    </ul>
+</nav>
+
+<header>
+    <div class="header-top">
+        <button class="btn-action btn-menu" onclick="toggleMenu()">☰ MENU</button>
+        <a href="#" class="logo" onclick="filterCategory('All')"><span class="t">TECH</span><span class="z">ZONE</span></a>
+        <div class="header-right">
+            <button class="btn-action btn-mode" id="modeBtn" onclick="toggleDarkMode()">🌙 Mode</button>
+            <div class="cart-wrapper" onclick="alert('Opening Cart...')">
+                🛒<span class="cart-badge" id="cartCount">0</span>
+            </div>
+            <button class="btn-action btn-login">LOGIN</button>
+        </div>
+    </div>
+    <div class="search-area">
+        <input type="text" id="searchBar" placeholder="Search gadgets or categories..." onkeyup="searchItems()">
+        <button onclick="searchItems()">Search</button>
+    </div>
+    <nav class="category-nav">
+        <div class="cat-link active" onclick="filterCategory('All')">🏠 All PRODUCTS</div>
+        <div class="cat-link" onclick="filterCategory('NEW ARRIVALS')">NEW ARRIVALS</div>
+        <div class="cat-link" onclick="filterCategory('OFFER')">OFFER</div>
+        <div class="cat-link" onclick="filterCategory('SMART PHONES')">SMART PHONES</div>
+        <div class="cat-link" onclick="filterCategory('LAPTOPS')">LAPTOPS</div>
+        <div class="cat-link" onclick="filterCategory('AUDIO')">AUDIO</div>
+        <div class="cat-link" onclick="filterCategory('WATCHES')">WATCHES</div>
+        <div class="cat-link" onclick="filterCategory('GAMING')">GAMING</div>
+    </nav>
+</header>
+
+<div class="container">
+    <div id="noResults" style="display:none; text-align:center; font-size:24px; padding:50px;">Opps! Nothing found. 🔍</div>
+    <div id="shopContent"></div>
+</div>
+
+<footer>
+    <div class="footer-container">
+        <div class="footer-box">
+            <h3>About TechZone</h3>
+            <p>TechZone is Sri Lanka's leading premium gadget store. We specialize in bringing the latest global technology with authentic quality and unmatched trust.</p>
+        </div>
+        <div class="footer-box">
+            <h3>Quick Information</h3>
+            <div class="contact-info">
+                <i class="fa-solid fa-location-dot"></i>
+                <p>No. 123, Galle Road, Colombo 03</p>
+            </div>
+            <div class="contact-info">
+                <i class="fa-brands fa-whatsapp"></i>
+                <p>+94 71 311 3596</p>
+            </div>
+            <div class="contact-info">
+                <i class="fa-solid fa-envelope"></i>
+                <p>support@techzone.lk</p>
+            </div>
+        </div>
+        <div class="footer-box">
+            <h3>Customer Service</h3>
+            <ul>
+                <li>24-Month Hardware Warranty</li>
+                <li>Safe Island-wide Delivery</li>
+                <li>7-Day Easy Return Policy</li>
+            </ul>
+        </div>
+        <div class="footer-box">
+            <h3>Payment Methods</h3>
+            <p>VISA | MASTER CARD | KOKO | COD</p>
+        </div>
+    </div>
+    <div style="text-align: center; margin-top: 60px; color: #555; border-top: 1px solid #222; padding-top: 30px;">
+        <p>&copy; 2026 TechZone Gadget Store. All Rights Reserved.</p>
+    </div>
+</footer>
+
+<script>
+    const inventory = {
+"NEW ARRIVALS": [
+          { name: "Xiaomi 14 Ultra", price: "310,000", old: "330,000", offer: "NEW", img: "Xiaomi 14 Ultra.jpg" },
+          { name: "OnePlus 12", price: "245,000", old: "260,000", offer: "NEW", img: "OnePlus 12.jpg" },
+          { name: "MacBook Air M3", price: "385,000", old: "400,000", offer: "NEW", img: "MacBook Air M3.jpg" },
+          { name: "Asus ROG G14", price: "450,000", old: "480,000", offer: "NEW", img: "Asus ROG G14.jpg" },
+          { name: "AirPods Pro 2", price: "75,000", old: "82,000", offer: "NEW", img: "AirPods Pro 2.jpg" },
+          { name: "JBL Flip 6", price: "35,000", old: "40,000", offer: "NEW", img: "JBL Flip 6.jpg" },
+          { name: "Apple Watch Ultra 2", price: "245,000", old: "260,000", offer: "NEW", img: "Apple Watch Ultra 2.jpg" },
+          { name: "PS5 Slim Console", price: "185,000", old: "210,000", offer: "NEW", img: "PS5 Slim Console.jpg" },
+          { name: "Xbox Series X", price: "175,000", old: "190,000", offer: "NEW", img: "Xbox Series X.jpg" },
+          { name: "Nintendo Switch", price: "115,000", old: "130,000", offer: "NEW", img: "Nintendo Switch.jpg" },
+        ],
+
+"OFFER": [
+            { name: "Samsung S24 Ultra", price: "399,000", old: "420,000", offer: "10%OFF", img: "Samsung S24 Ultra.jpg" },
+            { name: "Dell XPS 13 OLED", price: "345,000", old: "360,000", offer: "15%oFF", img: "Dell XPS 13 OLED.jpg" },
+            { name: "Bose QC Ultra", price: "115,000", old: "125,000", offer: "20%OFF", img: "Bose QC Ultra.jpg" },
+            { name: "Huawei GT 4", price: "55,000", old: "62,000", offer: "22%OFF", img: "Huawei GT 4.jpg" },
+            { name: "Logitech G Pro", price: "45,000", old: "52,000", offer: "25%OFF", img: "Logitech G Pro.jpg" }
+        ],
+
+        "SMART PHONES": [
+            { name: "Samsung S24 Ultra", price: "399,000", old: "420,000", offer: "10%OFF", img: "Samsung S24 Ultra.jpg" },
+            { name: "iPhone 15 Pro Max", price: "425,000", old: "450,000",offer:"TRENDING", img: "iPhone 15 Pro Max.jpg" },
+            { name: "Google Pixel 8 Pro", price: "285,000", old: "300,000", offer: "TRENDING", img: "Google Pixel 8 Pro.jpg" },
+            { name: "Xiaomi 14 Ultra", price: "310,000", old: "330,000", offer: "NEW", img: "Xiaomi 14 Ultra.jpg" },
+            { name: "OnePlus 12", price: "245,000", old: "260,000", offer: "NEW", img: "OnePlus 12.jpg" }
+        ],
+        "LAPTOPS": [
+            { name: "MacBook Air M3", price: "385,000", old: "400,000", offer: "NEW", img: "MacBook Air M3.jpg" },
+            { name: "Dell XPS 13 OLED", price: "345,000", old: "360,000", offer: "15%OFF", img: "Dell XPS 13 OLED.jpg" },
+            { name: "HP Spectre x360", price: "315,000", old: "340,000", offer: "TRENDING", img: "HP Spectre x360.jpg" },
+            { name: "Asus ROG G14", price: "450,000", old: "480,000", offer: "NEW", img: "Asus ROG G14.jpg" },
+            { name: "Lenovo X1 Carbon", price: "395,000", old: "410,000", offer: "TRENDING", img: "Lenovo X1 Carbon.jpg" }
+        ],
+        "AUDIO": [
+            { name: "Sony WH-1000XM5", price: "95,000", old: "105,000", offer: "TRENDING", img: "Sony WH-1000XM5.jpg" },
+            { name: "AirPods Pro 2", price: "75,000", old: "82,000", offer: "NEW", img: "AirPods Pro 2.jpg" },
+            { name: "Bose QC Ultra", price: "115,000", old: "125,000", offer: "20%OFF", img: "Bose QC Ultra.jpg" },
+            { name: "JBL Flip 6", price: "35,000", old: "40,000", offer: "NEW", img: "JBL Flip 6.jpg" },
+            { name: "Momentum 4", price: "88,000", old: "95,000", offer: "TRENDING", img: "Momentum 4.jpg" }
+        ],
+        "WATCHES": [
+            { name: "Apple Watch Ultra 2", price: "245,000", old: "260,000", offer: "NEW", img: "Apple Watch Ultra 2.jpg" },
+            { name: "Galaxy Watch 6", price: "65,000", old: "75,000", offer: "TENDING", img: "Galaxy Watch 6.jpg" },
+            { name: "Garmin Fenix 7", price: "185,000", old: "200,000", offer: "TRENDING", img: "Garmin Fenix 7.jpg" },
+            { name: "Huawei GT 4", price: "55,000", old: "62,000", offer: "22%OFF", img: "Huawei GT 4.jpg" },
+            { name: "Amazfit GTR 4", price: "42,000", old: "48,000", offer: "TRENDING", img: "Amazfit GTR 4.jpg" }
+        ],
+        "GAMING": [
+            { name: "PS5 Slim Console", price: "185,000", old: "210,000", offer: "NEW", img: "PS5 Slim Console.jpg" },
+            { name: "Xbox Series X", price: "175,000", old: "190,000", offer: "NEW", img: "Xbox Series X.jpg" },
+            { name: "Nintendo Switch", price: "115,000", old: "130,000", offer: "NEW", img: "Nintendo Switch.jpg" },
+            { name: "Razer Mouse V3", price: "18,000", old: "22,000", offer: "TRENDING", img: "Razer Mouse V3.jpg" },
+            { name: "Logitech G Pro", price: "45,000", old: "52,000", offer: "25%OFF", img: "Logitech G Pro.jpg" }
+        ]
+    };
+
+    let count = 0;
+    function addToCart(itemName) {
+        count++;
+        document.getElementById('cartCount').innerText = count;
+        alert(itemName + " added to cart!");
+    }
+
+    function renderStore() {
+        const content = document.getElementById('shopContent');
+        content.innerHTML = "";
+        for (const [cat, items] of Object.entries(inventory)) {
+            let section = `
+            <div class="category-section" id="section-${cat}" data-category-name="${cat.toLowerCase()}">
+                <h3 class="section-title">${cat}</h3>
+                <div class="product-grid">`;
+            
+            items.forEach(item => {
+                section += `
+                <div class="card" data-item-name="${item.name.toLowerCase()}">
+                    <div class="img-box">
+                        <span class="offer-tag">${item.offer}</span>
+                        <img src="${item.img}" alt="${item.name}" onerror="this.src='https://placehold.co/400x400?text=${item.name}'">
+                    </div>
+                    <div class="info">
+                        <h4>${item.name}</h4>
+                        <div style="margin-bottom: 8px;">
+                            <span class="old-price">LKR ${item.old}</span>
+                            <span class="price">LKR ${item.price}</span>
+                        </div>
+                        <button class="btn-cart" onclick="addToCart('${item.name}')">Add To Cart</button>
+                        <button class="btn-buy" onclick="alert('Order Placed for ${item.name}')">Buy Now</button>
+                    </div>
+                </div>`;
+            });
+            section += `</div></div>`;
+            content.innerHTML += section;
+        }
+    }
+
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
+    }
+
+    function filterCategory(category) {
+        let sections = document.getElementsByClassName('category-section');
+        let links = document.getElementsByClassName('cat-link');
+        document.getElementById('searchBar').value = ""; 
+        
+        for(let link of links) {
+            link.classList.remove('active');
+            if(link.innerText.includes(category)) link.classList.add('active');
+        }
+        for (let section of sections) {
+            section.style.display = (category === 'All') ? "block" : (section.id === `section-${category}` ? "block" : "none");
+            let cards = section.getElementsByClassName('card');
+            for(let card of cards) card.style.display = "block";
+        }
+        document.getElementById('noResults').style.display = "none";
+    }
+
+    function searchItems() {
+        let input = document.getElementById('searchBar').value.toLowerCase();
+        let sections = document.getElementsByClassName('category-section');
+        let totalVisible = 0;
+
+        for (let section of sections) {
+            let catName = section.getAttribute('data-category-name');
+            let cards = section.getElementsByClassName('card');
+            let foundInCategory = catName.includes(input);
+            let visibleInThisSection = 0;
+
+            for (let card of cards) {
+                let itemName = card.getAttribute('data-item-name');
+                if (foundInCategory || itemName.includes(input)) {
+                    card.style.display = "block";
+                    visibleInThisSection++;
+                    totalVisible++;
+                } else {
+                    card.style.display = "none";
+                }
+            }
+            section.style.display = visibleInThisSection > 0 ? "block" : "none";
+        }
+        document.getElementById('noResults').style.display = totalVisible === 0 ? "block" : "none";
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('light-mode');
+        let btn = document.getElementById('modeBtn');
+        btn.innerHTML = document.body.classList.contains('light-mode') ? "☀️ Mode" : "🌙 Mode";
+    }
+
+    renderStore();
+</script>
+</body>
+</html>
